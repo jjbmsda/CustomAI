@@ -1,39 +1,42 @@
-import tensorflow as tf
-from tensorflow.keras.models import Sequential
+from tensorflow import keras
+from tensorflow.keras.models import Sequential, load_model
 from tensorflow.keras.layers import Dense
+from sklearn.preprocessing import StandardScaler
+from sklearn.model_selection import train_test_split
 import numpy as np
 import os
 
-MODEL_DIR = "saved_models"
-os.makedirs(MODEL_DIR, exist_ok=True)
-MODEL_PATH = os.path.join(MODEL_DIR, "custom_model.h5")
+MODEL_PATH = "saved_models/custom_model.h5"
 
-# 간단한 MLP 모델 생성
-def create_model(input_shape=10, layers=[(64, 'relu'), (32, 'relu')], output_units=1):
-    model = Sequential()
-    model.add(Dense(layers[0][0], activation=layers[0][1], input_shape=(input_shape,)))
-    
-    for units, activation in layers[1:]:
-        model.add(Dense(units, activation=activation))
-    
-    model.add(Dense(output_units, activation="sigmoid"))
-    return model
-
-# 가상의 데이터로 학습
 def train_model():
-    X_train = np.random.rand(100, 10)  # 100개의 샘플, 10개의 특징
-    y_train = np.random.randint(0, 2, 100)  # 이진 분류
-    
-    model = create_model()
-    model.compile(optimizer="adam", loss="binary_crossentropy", metrics=["accuracy"])
-    model.fit(X_train, y_train, epochs=10, batch_size=16)
-    
+    data = np.loadtxt("uploaded_data/data.csv", delimiter=',', skiprows=1)
+    X = data[:, :-1]  # Feature 데이터
+    y = data[:, -1]   # Label 데이터 (실제 정답)
+
+    # 데이터 정규화
+    scaler = StandardScaler()
+    X = scaler.fit_transform(X)
+
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+    model = Sequential([
+        Dense(64, activation='relu', input_shape=(X_train.shape[1],)),
+        Dense(32, activation='relu'),
+        Dense(1, activation='sigmoid')
+    ])
+
+    model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+    model.fit(X_train, y_train, epochs=50, batch_size=16, verbose=1)
+
+    # 테스트 데이터에서 정확도 평가
+    test_loss, test_accuracy = model.evaluate(X_test, y_test, verbose=1)
+    print(f"📊 테스트 정확도: {test_accuracy:.4f}")
+
     model.save(MODEL_PATH)
     return MODEL_PATH
 
-# 예측 수행
 def predict(features):
-    model = tf.keras.models.load_model(MODEL_PATH)
+    model = load_model(MODEL_PATH)
     features = np.array(features).reshape(1, -1)
     prediction = model.predict(features)
     return float(prediction[0][0])
