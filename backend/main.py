@@ -1,13 +1,21 @@
 from fastapi import FastAPI, UploadFile, File
+from pydantic import BaseModel
 import uvicorn
 import shutil
 import os
+import logging
 from model_handler import train_model, predict
 
 app = FastAPI()
 
 UPLOAD_DIR = "uploaded_data"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+class PredictionInput(BaseModel):
+    features: list
 
 @app.get("/")
 def home():
@@ -26,9 +34,10 @@ def train():
     return {"message": "Model trained successfully", "model_path": model_path}
 
 @app.post("/predict/")
-def make_prediction(features: list):
-    prediction = predict(features)
+def make_prediction(input_data: PredictionInput):
+    logger.info(f"Received data: {input_data}")  # 요청 데이터 로그 출력
+    prediction = predict(input_data.features)
     return {"prediction": prediction}
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=8000, reload=True)

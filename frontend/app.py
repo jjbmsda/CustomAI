@@ -1,5 +1,6 @@
 import streamlit as st
 import requests
+import json
 
 # FastAPI 서버 주소
 API_URL = "http://localhost:8000"
@@ -25,5 +26,14 @@ st.subheader("모델 예측")
 features = [st.number_input(f"Feature {i+1}", value=0.0) for i in range(10)]
 
 if st.button("예측 실행"):
-    response = requests.post(f"{API_URL}/predict/", json={"features": features})
-    st.write("예측 결과:", response.json()["prediction"])
+    data = {"features": list(map(float, features))}  # 숫자 리스트로 변환
+    response = requests.post(f"{API_URL}/predict/", json=data)
+    
+    if response.status_code == 200:
+        result = response.json()
+        if "prediction" in result:
+            st.write("예측 결과:", result["prediction"])
+        else:
+            st.error(f"예측 오류: {result}")
+    else:
+        st.error(f"서버 오류: {response.status_code}")
