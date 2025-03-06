@@ -85,6 +85,6 @@ This project is licensed under the MIT License.
 
 ---
 
-**Contributions are welcome!** Feel free to submit issues and pull requests.
+**Contributions are welcome!!** Feel free to submit issues and pull requests.
 
 
