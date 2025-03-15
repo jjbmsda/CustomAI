@@ -2,7 +2,8 @@
 
 ## Overview
 
-This project provides a web-based service that allows users to create, train, and use custom AI models based on their specific needs. The backend is powered by **FastAPI**, and the frontend is built using **Streamlit** for an easy-to-use interface.
+This project provides a web-based service that allows users to create, train, and use custom AI models based on their specific needs. 
+The backend is powered by **FastAPI**, and the frontend is built using **Streamlit** for an easy-to-use interface.
 
 ## Features
 
